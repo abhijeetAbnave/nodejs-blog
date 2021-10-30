@@ -1,25 +1,30 @@
 const Blog = require("../models/blogs");
+const User = require("../models/user");
 const Roles = require("../models/roles.json")
+const moment = require('moment');
 
 String.prototype.toTitleCase = function () { return this.valueOf().toLowerCase().replace(this.valueOf()[0], this.valueOf()[0].toUpperCase()); }
 
-function requestVerifier(req, res, next) {
+async function requestVerifier(req, res, next) {
+    // const userId = req.user.user_id;
+    // const user = await User.findOne({ userId } );
+    // if(!user.deleted){        
     console.log("Request verifier got called ");
     next();
+    // } else {
+    //     res.status(205).json({ message: "Please reach out to the Admin, this user no more exists" });
+    // }
 }
 
 var postRequest = async function (req, res) {
     console.log("post request got called ", req);
     try {
-        const { blog_name, blog_subtitle, blog_content, blog_owner_name, blog_owner_id, blog_created_timestamp, blog_read_time, blog_comments, blog_approved } = req.body;
-        let blogApproved = blog_approved ? false : false; //blog approved will always be false as admin will allow it
+        const { blog_name, blog_subtitle, blog_content, blog_owner_name, blog_owner_id, blog_read_time, blog_comments, blog_approved } = req.body;
+        let deleted = false;
         if (!(blog_name && blog_subtitle && blog_content && blog_owner_id)) {
             res.status(400).send("All input is required");
         }
-        // const oldBlog = await Blogs.findOne({ blog_name });
-        // if (oldBlog) {
-        //     return res.status(409).send("Blog Already Exist. Please retry");
-        // }
+        const blog_created_timestamp = moment().format('YYYY-MM-DDTHH:mm:ss+00:00');
         const blog = await Blog.create({
             blog_name: blog_name.toTitleCase(),
             blog_subtitle,
@@ -29,7 +34,8 @@ var postRequest = async function (req, res) {
             blog_created_timestamp,
             blog_read_time,
             blog_comments,
-            blogApproved
+            blog_approved: false, //blog approved will always be false as admin will allow it
+            deleted
         });
 
         res.status(201).json(blog);
@@ -43,35 +49,37 @@ var getRequest = function (req, res) {
 
     if (req.user.role === Roles.admin) {
         Blog.find({}, (err, blogs) => {
-            res.send(blogs.reduce((blogsMap, item) => {
+            res.send(Object.values(blogs.reduce((blogsMap, item) => {
                 blogsMap[item.id] = item
                 return blogsMap
-            }, {}))
+            }, {})))
         })
     } else {
-        Blog.find({ blog_owner_id }, (err, blogs) => {
-            res.send(blogs.reduce((blogsMap, item) => {
+        Blog.find({ blog_owner_id, deleted: false }, (err, blogs) => {  //soft deleted not allowed
+            res.send(Object.values(blogs.reduce((blogsMap, item) => {
                 blogsMap[item.id] = item
                 return blogsMap
-            }, {}))
+            }, {})))
         })
     }
 };
 
 var getAllRequest = function (req, res) { //get all list of publised blogs
-
-    Blog.find({ blog_approved: true }, (err, blogs) => {
+    let filter = {
+        deleted: false,
+        blog_approved: true
+    }
+    Blog.find(filter, (err, blogs) => { //soft deleted not allowed
         if (err) {
             res.status(601).send(err);
         } else {
 
-            res.send(blogs.reduce((blogsMap, item) => {
+            res.send(Object.values(blogs.reduce((blogsMap, item) => {
                 blogsMap[item.id] = item
                 return blogsMap
-            }, {}))
+            }, {})))
         }
     })
-
 };
 
 var putRequest = function (req, res) {
@@ -120,10 +128,12 @@ var putApproveRequest = function (req, res) {
 var deleteRequest = function (req, res) {
     const blogId = req.body._id;
     const updatedContent = req.body;
+    updatedContent.deleted = true;
     const options = {
         new: true
     }
-    Blog.findByIdAndDelete(blogId, options, (err, blog) => {
+    Blog.findByIdAndUpdate(blogId, updatedContent, options, (err, blog) => { //soft delete
+        // Blog.findByIdAndDelete(blogId, options, (err, blog) => { //hard delete
         if (!err) {
             getRequest(req, res);
         } else {
