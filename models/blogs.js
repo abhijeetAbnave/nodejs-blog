@@ -7,9 +7,14 @@ const blogsSchema = new mongoose.Schema({
   blog_owner_name: { type: String },
   blog_owner_id: { type: String },
   blog_created_timestamp: { type: String },
-  blog_read_time: {type: String},
-  blog_comments: {type: String},
-  blog_approved: {type: Boolean}
+  blog_read_time: { type: String },
+  blog_comments: { type: String },
+  blog_approved: { type: Boolean },
+  deleted: {
+    type: Boolean,
+    index: true,
+    default: false
+  }
 });
 
 module.exports = mongoose.model("blog", blogsSchema);
