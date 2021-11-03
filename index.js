@@ -24,12 +24,12 @@ app.post('/register', controllerUser.validateRequest, controllerUser.postRequest
 app.post('/login', controllerAuthenticateUser.validateRequest, controllerAuthenticateUser.postRequest);
 app.get('/get-users', auth, controllerUsers.getRequest);
 app.delete('/delete-user', auth, controllerUsers.deleteRequest);
-app.post('/post-blogs', auth, controllerBlogs.validateRequest, controllerBlogs.postRequest);
+app.post('/post-blog', auth, controllerBlogs.validateRequest, controllerBlogs.postRequest);
 app.get('/get-blogs', auth, controllerBlogs.validateRequest, controllerBlogs.getRequest);
 app.get('/get-all-blogs', auth, controllerBlogs.validateRequest, controllerBlogs.getAllRequest);
-app.put('/put-blogs', auth, controllerBlogs.validateRequest, controllerBlogs.putRequest);
+app.put('/put-blog', auth, controllerBlogs.validateRequest, controllerBlogs.putRequest);
 app.put('/approve-blog', auth, controllerBlogs.validateRequest, controllerBlogs.putApproveRequest);
-app.delete('/delete-blogs', auth, controllerBlogs.validateRequest, controllerBlogs.deleteRequest);
+app.delete('/delete-blog', auth, controllerBlogs.validateRequest, controllerBlogs.deleteRequest);
 
 
 app.listen(port, function () {

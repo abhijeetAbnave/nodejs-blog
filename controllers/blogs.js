@@ -19,14 +19,16 @@ async function requestVerifier(req, res, next) {
 var postRequest = async function (req, res) {
     console.log("post request got called ", req);
     try {
-        const { blog_name, blog_subtitle, blog_content, blog_owner_name, blog_owner_id, blog_read_time, blog_comments, blog_approved } = req.body;
+        const { blog_name, blog_subtitle, blog_content, blog_owner_name, blog_owner_id, blog_read_time, blog_comments } = req.body;
         let deleted = false;
         if (!(blog_name && blog_subtitle && blog_content && blog_owner_id)) {
             res.status(400).send("All input is required");
         }
         const blog_created_timestamp = moment().format('YYYY-MM-DDTHH:mm:ss+00:00');
+        const titleCaseName = blog_name
+        // .toTitleCase();
         const blog = await Blog.create({
-            blog_name: blog_name.toTitleCase(),
+            blog_name: titleCaseName,
             blog_subtitle,
             blog_content,
             blog_owner_name,
@@ -38,7 +40,7 @@ var postRequest = async function (req, res) {
             deleted
         });
 
-        res.status(201).json(blog);
+        getRequest(req, res);
     } catch (err) {
         console.log(err);
     }
@@ -95,7 +97,7 @@ var putRequest = function (req, res) {
     if ((userRole == Roles.admin) || (bloggerId === userId)) {
         Blog.findByIdAndUpdate(blogId, updatedContent, options, (err, blog) => {
             if (!err) {
-                res.status(201).json(blog);
+                getRequest(req, res);
             } else {
                 res.status(601).send(err);
             }
@@ -115,7 +117,7 @@ var putApproveRequest = function (req, res) {
     if (userRole == Roles.admin) {
         Blog.findByIdAndUpdate(blogId, updatedContent, options, (err, blog) => {
             if (!err) {
-                res.status(201).json(blog);
+                getRequest(req, res);
             } else {
                 res.status(601).send(err);
             }
@@ -127,8 +129,10 @@ var putApproveRequest = function (req, res) {
 
 var deleteRequest = function (req, res) {
     const blogId = req.body._id;
-    const updatedContent = req.body;
-    updatedContent.deleted = true;
+    const updatedContent = {
+        _id: req.body._id,
+        deleted: true
+    };
     const options = {
         new: true
     }

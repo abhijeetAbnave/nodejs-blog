@@ -24,7 +24,7 @@ var deleteRequest = function (req, res) {
   const userId = req.user.user_id;
   const userRole = req.user.role;
   const updatedContent = req.body;
-  updatedContent.deleted = true // user soft delete flag
+  // updatedContent.deleted = true // user soft delete flag
   const options = {
     new: true
   }
