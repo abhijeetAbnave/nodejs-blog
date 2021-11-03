@@ -1,1 +1,1 @@
-you can start this application by command "node index.js"
+you can start this application by command "npm start"
