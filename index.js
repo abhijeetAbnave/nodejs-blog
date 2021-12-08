@@ -18,6 +18,7 @@ var controllerUser = require(path.resolve('.', 'controllers/register.js'));
 var controllerUsers = require(path.resolve('.', 'controllers/users.js'));
 var controllerAuthenticateUser = require(path.resolve('.', 'controllers/login.js'));
 var controllerBlogs = require(path.resolve('.', 'controllers/blogs.js'));
+var controllerSampleRead = require(path.resolve('.', 'controllers/read.js'));
 
 // app.post('/summary', controllerCall.validateRequest, controllerCall.postRequest);
 app.post('/register', controllerUser.validateRequest, controllerUser.postRequest);
@@ -30,6 +31,8 @@ app.get('/get-all-blogs', auth, controllerBlogs.validateRequest, controllerBlogs
 app.put('/put-blog', auth, controllerBlogs.validateRequest, controllerBlogs.putRequest);
 app.put('/approve-blog', auth, controllerBlogs.validateRequest, controllerBlogs.putApproveRequest);
 app.delete('/delete-blog', auth, controllerBlogs.validateRequest, controllerBlogs.deleteRequest);
+
+app.get('/users', controllerSampleRead.validateRequest, controllerSampleRead.getRequest)
 
 
 app.listen(port, function () {
